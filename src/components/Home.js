@@ -21,7 +21,7 @@ import {
 import { debounce } from "lodash";
 import { format } from "date-fns";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MovieReviews from "./movieReviews";
+import Reviews from "./Reviews";
 
 const Home = ({ apiKey }) => {
   const [genres, setGenres] = useState([]);
@@ -32,6 +32,7 @@ const Home = ({ apiKey }) => {
   const [reviews, setReviews] = useState({});
   const [expanded, setExpanded] = useState(false);
   const [movieReviews, showMovieReviews] = useState(false);
+  const [tvReviews, showTvReviews] = useState(true);
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
@@ -69,6 +70,7 @@ const Home = ({ apiKey }) => {
       );
       setTvMovieShows(response.data.results);
       showMovieReviews(!movieReviews);
+      showTvReviews(!tvReviews);
     } catch (error) {
       console.error("Error searching movies:", error);
     }
@@ -118,8 +120,8 @@ const Home = ({ apiKey }) => {
   return (
     <Box>
       <FormControl variant="outlined">
-        <Grid container justifyContent="space-between">
-          <Grid item xs={4}>
+        <Grid container spacing={5}>
+          <Grid item sm={6}>
             <InputLabel id="genre-label">Genre</InputLabel>
             <Select
               fullWidth={true}
@@ -140,7 +142,7 @@ const Home = ({ apiKey }) => {
               {/* Add more genre options */}
             </Select>
           </Grid>
-          <Grid item xs={4}>
+          <Grid item sm={6}>
             <TextField
               fullWidth={true}
               sx={{ minWidth: 300 }}
@@ -159,34 +161,40 @@ const Home = ({ apiKey }) => {
         </Grid>
       </FormControl>
 
-      <Grid container spacing={2}>
-        {tvMovieShows.map((movie, index) => (
-          <Grid key={movie.id} item xs={12} sm={6} md={4} lg={3}>
+      <Grid sx={{ paddingTop: 2 }} container spacing={2}>
+        {tvMovieShows.map((media, index) => (
+          <Grid key={media.id} item xs={12} sm={6} md={4} lg={3}>
             <Card>
               <CardMedia
                 component="img"
                 height="300"
-                image={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
-                alt={movie.name}
+                image={`https://image.tmdb.org/t/p/w500/${media.poster_path}`}
+                alt={media.name}
               />
               <CardContent>
-                {movie.name ? <Typography variant="h6">{movie.name}</Typography> : null}
-                {movie.title ? <Typography variant="h6">{movie.title}</Typography> : null}
+                {media.name ? <Typography variant="h5">{media.name}</Typography> : null}
+                {media.title ? <Typography variant="h6">{media.title}</Typography> : null}
 
-                {movie.first_air_date ? (
-                  <Typography>
-                    First aired:
-                    {format(new Date(movie.first_air_date), "eee do MMM")}
-                  </Typography>
+                {media.first_air_date ? (
+                  <Typography>First air date: {format(new Date(media.first_air_date), "eee do MMM")}</Typography>
                 ) : null}
-                {movie.release_date ? (
+                {media.release_date ? (
                   <Typography>
                     Release date:
-                    {format(new Date(movie.release_date), "eee do MMM")}
+                    {format(new Date(media.release_date), "eee do MMM")}
                   </Typography>
                 ) : null}
 
-                <Typography>Average vote: {movie.vote_average}</Typography>
+                <Typography>Average vote: {media.vote_average}</Typography>
+
+                {tvReviews ? (
+                  <>
+                    <Typography className="mt-2" variant="h5">
+                      Reviews
+                    </Typography>
+                    <Reviews apiKey={apiKey} mediaId={media.id} type="tv" />
+                  </>
+                ) : null}
 
                 {movieReviews ? (
                   <Accordion expanded={expanded === `panel${index}`} onChange={handleChange(`panel${index}`)}>
@@ -199,17 +207,17 @@ const Home = ({ apiKey }) => {
 
                       <Typography sx={{ color: "text.secondary" }}>
                         {/* Display the submitted review, if available */}
-                        {reviews[movie.id] && (
+                        {reviews[media.id] && (
                           <div>
                             <Typography variant="h6">Submitted Review:</Typography>
-                            <Typography>Rating: {reviews[movie.id].rating}</Typography>
-                            <Typography>Comment: {reviews[movie.id].comment}</Typography>
+                            <Typography>Rating: {reviews[media.id].rating}</Typography>
+                            <Typography>Comment: {reviews[media.id].comment}</Typography>
                           </div>
                         )}
                       </Typography>
                     </AccordionSummary>
                     <AccordionDetails>
-                      <MovieReviews apiKey={apiKey} mediaId={movie.id} />
+                      <Reviews apiKey={apiKey} mediaId={media.id} type="movie" />
 
                       <Typography>
                         {/* Review form for each movie */}
@@ -218,7 +226,7 @@ const Home = ({ apiKey }) => {
                             e.preventDefault();
                             const rating = e.target.elements.rating.value;
                             const comment = e.target.elements.comment.value;
-                            handleReviewSubmit(movie.id, rating, comment);
+                            handleReviewSubmit(media.id, rating, comment);
                           }}
                         >
                           <TextField

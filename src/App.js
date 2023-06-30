@@ -11,8 +11,8 @@ const App = () => {
 
   return (
     <div className="App">
-      <Typography variant="h1" sx={{ marginBottom: "16px" }}>
-        Trending TV Shows
+      <Typography align="center" variant="h1" sx={{ marginBottom: "16px" }}>
+        Movies & TV Shows
       </Typography>
 
       <input type="text" placeholder="Enter API key" value={apiKey} onChange={handleApiKeyChange} />
